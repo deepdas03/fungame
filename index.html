@@ -55,30 +55,25 @@
   <audio id="bgMusic" src="bg-music.mp3" loop></audio>
   <audio id="gOverMusic" src="gameover.mp3"></audio>
   <script>
-    // Setup
+    
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
-    // Customizable image assets (.jpg format for your preference)
     const birdImg = new Image(); birdImg.src = 'bird.jpg';
     const pillarImg = new Image(); pillarImg.src = 'pillar.jpg';
     const bgImage = new Image(); bgImage.src = 'background.jpg';
 
-    // Music
     const bgMusic = document.getElementById('bgMusic');
     const gOverMusic = document.getElementById('gOverMusic');
 
-    // Game over overlay
     const gameOverScreen = document.getElementById('gameOverScreen');
     const restartBtn = document.getElementById('restartBtn');
     const scoreTxt = document.getElementById('scoreTxt');
     const overImg = document.getElementById('overImg');
 
-    // Game properties (your values)
     let bird = { x: 60, y: 250, w: 60, h: 60, speed: 0, gravity: 0.22, jump: -6 };
     let pillars = [], gap = 250, pWidth = 60, score = 0, running = false;
 
-    // Draw background image
     function drawBackground() {
       ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
     }
@@ -107,23 +102,18 @@
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       drawBackground();
 
-      // Bird physics
       bird.speed += bird.gravity;
       bird.y += bird.speed;
-      // Pillar generator (your 300px horizontal spacing)
       if (pillars.length === 0 || pillars[pillars.length-1].x < canvas.width - 300) {
         let top = Math.random() * (canvas.height - gap - 80) + 40;
         pillars.push({ x: canvas.width, top: top, scored: false });
       }
-      // Move pillars
       for (let p of pillars) p.x -= 1.8;
-      // Remove off-screen pillars
       pillars = pillars.filter(p => p.x + pWidth > 0);
 
       drawBird();
       drawPillars();
 
-      // Check collisions and score
       for (let p of pillars) {
         if (bird.x + bird.w > p.x && bird.x < p.x + pWidth) {
           if (bird.y < p.top || bird.y + bird.h > p.top + gap) {
@@ -135,12 +125,10 @@
           score++; p.scored = true;
         }
       }
-      // Ground and ceiling
       if (bird.y < 0 || bird.y + bird.h > canvas.height) {
         endGame();
         return;
       }
-      // Draw score
       scoreTxt.innerText = "Score: " + score;
       requestAnimationFrame(loop);
     }
@@ -154,7 +142,6 @@
       scoreTxt.style.display = "none";
     }
 
-    // Controls
     document.addEventListener('keydown', e => {
       if (e.code === 'Space') {
         if (running) bird.speed = bird.jump;
@@ -166,7 +153,6 @@
 
     restartBtn.onclick = () => resetGame();
 
-    // Ensure both bird and background images are loaded before starting the game
     let imagesLoaded = 0;
     function checkLoaded() {
       imagesLoaded++;
@@ -177,3 +163,4 @@
   </script>
 </body>
 </html>
+
