@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Flappy Bird Game</title>
+  <style>
+    body {
+      background: #222;
+      margin: 0;
+      overflow: hidden;
+    }
+    #gameCanvas {
+      display: block;
+      margin: 30px auto;
+      border: 4px solid #444;
+      background: #111;
+    }
+    #gameOverScreen {
+      position: absolute;
+      top: 40%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: none;
+      z-index: 5;
+      background: rgba(0,0,0,0.7);
+      padding: 40px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    #gameOverScreen img {
+      display: block;
+      margin: 0 auto 10px auto;
+      max-width: 200px;
+    }
+    #scoreTxt {
+      color: #fff;
+      font-size: 32px;
+      position: absolute;
+      left: 20px;
+      top: 20px;
+      z-index: 3;
+      text-shadow: 2px 2px 5px #111;
+      font-family: Arial, sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="scoreTxt">Score: 0</div>
+  <canvas id="gameCanvas" width="400" height="600"></canvas>
+  <div id="gameOverScreen">
+    <img id="overImg" src="gameover.jpg" alt="Game Over">
+    <h2 style="color: #fff; font-family: Arial, sans-serif;">Game Over!</h2>
+    <button id="restartBtn" style="font-size:18px;padding:10px 28px;">Restart</button>
+  </div>
+  <audio id="bgMusic" src="bg-music.mp3" loop></audio>
+  <audio id="gOverMusic" src="gameover.mp3"></audio>
+  <script>
+    // Setup
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Customizable image assets (.jpg format for your preference)
+    const birdImg = new Image(); birdImg.src = 'bird.jpg';
+    const pillarImg = new Image(); pillarImg.src = 'pillar.jpg';
+    const bgImage = new Image(); bgImage.src = 'background.jpg';
+
+    // Music
+    const bgMusic = document.getElementById('bgMusic');
+    const gOverMusic = document.getElementById('gOverMusic');
+
+    // Game over overlay
+    const gameOverScreen = document.getElementById('gameOverScreen');
+    const restartBtn = document.getElementById('restartBtn');
+    const scoreTxt = document.getElementById('scoreTxt');
+    const overImg = document.getElementById('overImg');
+
+    // Game properties (your values)
+    let bird = { x: 60, y: 250, w: 60, h: 60, speed: 0, gravity: 0.22, jump: -6 };
+    let pillars = [], gap = 250, pWidth = 60, score = 0, running = false;
+
+    // Draw background image
+    function drawBackground() {
+      ctx.drawImage(bgImage, 0, 0, canvas.width, canvas.height);
+    }
+    function drawBird() {
+      ctx.drawImage(birdImg, bird.x, bird.y, bird.w, bird.h);
+    }
+    function drawPillars() {
+      for (let p of pillars) {
+        ctx.drawImage(pillarImg, p.x, 0, pWidth, p.top);
+        ctx.drawImage(pillarImg, p.x, p.top + gap, pWidth, canvas.height - p.top - gap);
+      }
+    }
+
+    function resetGame() {
+      bird.y = 250; bird.speed = 0; score = 0; pillars = [];
+      gameOverScreen.style.display = "none";
+      scoreTxt.style.display = "block";
+      running = true;
+      bgMusic.currentTime = 0;
+      bgMusic.play();
+      loop();
+    }
+
+    function loop() {
+      if (!running) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawBackground();
+
+      // Bird physics
+      bird.speed += bird.gravity;
+      bird.y += bird.speed;
+      // Pillar generator (your 300px horizontal spacing)
+      if (pillars.length === 0 || pillars[pillars.length-1].x < canvas.width - 300) {
+        let top = Math.random() * (canvas.height - gap - 80) + 40;
+        pillars.push({ x: canvas.width, top: top, scored: false });
+      }
+      // Move pillars
+      for (let p of pillars) p.x -= 1.8;
+      // Remove off-screen pillars
+      pillars = pillars.filter(p => p.x + pWidth > 0);
+
+      drawBird();
+      drawPillars();
+
+      // Check collisions and score
+      for (let p of pillars) {
+        if (bird.x + bird.w > p.x && bird.x < p.x + pWidth) {
+          if (bird.y < p.top || bird.y + bird.h > p.top + gap) {
+            endGame();
+            return;
+          }
+        }
+        if (!p.scored && bird.x > p.x + pWidth) {
+          score++; p.scored = true;
+        }
+      }
+      // Ground and ceiling
+      if (bird.y < 0 || bird.y + bird.h > canvas.height) {
+        endGame();
+        return;
+      }
+      // Draw score
+      scoreTxt.innerText = "Score: " + score;
+      requestAnimationFrame(loop);
+    }
+
+    function endGame() {
+      running = false;
+      bgMusic.pause();
+      gOverMusic.currentTime = 0;
+      gOverMusic.play();
+      gameOverScreen.style.display = "block";
+      scoreTxt.style.display = "none";
+    }
+
+    // Controls
+    document.addEventListener('keydown', e => {
+      if (e.code === 'Space') {
+        if (running) bird.speed = bird.jump;
+      }
+    });
+    canvas.addEventListener('touchstart', function() {
+      if (running) bird.speed = bird.jump;
+    });
+
+    restartBtn.onclick = () => resetGame();
+
+    // Ensure both bird and background images are loaded before starting the game
+    let imagesLoaded = 0;
+    function checkLoaded() {
+      imagesLoaded++;
+      if (imagesLoaded === 2) resetGame();
+    }
+    birdImg.onload = checkLoaded;
+    bgImage.onload = checkLoaded;
+  </script>
+</body>
+</html>
