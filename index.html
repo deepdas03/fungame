@@ -50,12 +50,13 @@
   <div id="gameOverScreen">
     <img id="overImg" src="gameover.jpg" alt="Game Over">
     <h2 style="color: #fff; font-family: Arial, sans-serif;">Game Over!</h2>
+    <div id="finalScore" style="color:#fff; font-size:26px; margin: 16px 0; font-family: Arial, sans-serif;">
+    </div>
     <button id="restartBtn" style="font-size:18px;padding:10px 28px;">Restart</button>
   </div>
   <audio id="bgMusic" src="bg-music.mp3" loop></audio>
   <audio id="gOverMusic" src="gameover.mp3"></audio>
   <script>
-    
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
 
@@ -70,6 +71,7 @@
     const restartBtn = document.getElementById('restartBtn');
     const scoreTxt = document.getElementById('scoreTxt');
     const overImg = document.getElementById('overImg');
+    const finalScore = document.getElementById('finalScore');
 
     let bird = { x: 60, y: 250, w: 60, h: 60, speed: 0, gravity: 0.22, jump: -6 };
     let pillars = [], gap = 250, pWidth = 60, score = 0, running = false;
@@ -138,6 +140,7 @@
       bgMusic.pause();
       gOverMusic.currentTime = 0;
       gOverMusic.play();
+      finalScore.innerText = "Your Score: " + score;
       gameOverScreen.style.display = "block";
       scoreTxt.style.display = "none";
     }
@@ -163,4 +166,3 @@
   </script>
 </body>
 </html>
-
